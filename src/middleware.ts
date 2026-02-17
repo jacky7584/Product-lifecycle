@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!)
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-change-me')
 
 const protectedPages = ['/dashboard', '/projects', '/engineers']
 const publicApiPaths = ['/api/auth/login', '/api/auth/register', '/api/auth/logout']
