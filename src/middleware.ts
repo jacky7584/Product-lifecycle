@@ -5,7 +5,14 @@ import { jwtVerify } from 'jose'
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-change-me')
 
 const protectedPages = ['/dashboard', '/projects', '/engineers']
-const publicApiPaths = ['/api/auth/login', '/api/auth/register', '/api/auth/logout']
+const publicApiPaths = [
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/logout',
+  '/api/mcp',
+  '/api/sse',
+  '/api/message',
+]
 
 async function verifyTokenFromRequest(request: NextRequest) {
   const token = request.cookies.get('token')?.value
