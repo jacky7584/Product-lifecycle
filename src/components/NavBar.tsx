@@ -47,13 +47,7 @@ export default function NavBar() {
                   href="/dashboard"
                   className="text-sm text-gray-300 hover:text-white transition-colors duration-200 min-h-[44px] flex items-center cursor-pointer focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
                 >
-                  項目
-                </Link>
-                <Link
-                  href="/engineers"
-                  className="text-sm text-gray-300 hover:text-white transition-colors duration-200 min-h-[44px] flex items-center cursor-pointer focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
-                >
-                  工程師
+                  清單
                 </Link>
                 <span className="text-sm text-gray-400">{user.name}</span>
                 {themeToggleButton}
@@ -111,14 +105,7 @@ export default function NavBar() {
                   className="block text-sm text-gray-300 hover:text-white transition-colors duration-200 min-h-[44px] flex items-center cursor-pointer focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
                   onClick={() => setMenuOpen(false)}
                 >
-                  項目
-                </Link>
-                <Link
-                  href="/engineers"
-                  className="block text-sm text-gray-300 hover:text-white transition-colors duration-200 min-h-[44px] flex items-center cursor-pointer focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  工程師
+                  清單
                 </Link>
                 <span className="block text-sm text-gray-400 min-h-[44px] flex items-center">{user.name}</span>
                 {themeToggleButton}

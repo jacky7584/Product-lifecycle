@@ -32,7 +32,7 @@ export default function CreateProjectDialog({ open, onClose, onCreated }: Props)
     setError(null)
 
     if (!name.trim()) {
-      setError('請輸入項目名稱')
+      setError('請輸入清單名稱')
       return
     }
 
@@ -46,7 +46,7 @@ export default function CreateProjectDialog({ open, onClose, onCreated }: Props)
 
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error || '建立項目失敗')
+        setError(data.error || '建立清單失敗')
         return
       }
 
@@ -56,7 +56,7 @@ export default function CreateProjectDialog({ open, onClose, onCreated }: Props)
       onCreated()
       onClose()
     } catch {
-      setError('建立項目失敗')
+      setError('建立清單失敗')
     } finally {
       setSubmitting(false)
     }
@@ -74,11 +74,11 @@ export default function CreateProjectDialog({ open, onClose, onCreated }: Props)
       onClick={handleBackdropClick}
     >
       <div className="bg-bg-default rounded-lg shadow-xl w-full max-w-md mx-4 p-6 animate-slide-up">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">建立項目</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-4">建立清單</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="project-name" className="block text-sm font-medium text-text-secondary mb-1">
-              項目名稱 <span className="text-text-error">*</span>
+              清單名稱 <span className="text-text-error">*</span>
             </label>
             <input
               id="project-name"
@@ -87,7 +87,7 @@ export default function CreateProjectDialog({ open, onClose, onCreated }: Props)
               onChange={(e) => setName(e.target.value)}
               maxLength={100}
               className="w-full px-3 py-2 border border-border-primary rounded-md text-sm bg-bg-inputfield text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus"
-              placeholder="輸入項目名稱"
+              placeholder="輸入清單名稱"
               autoFocus
             />
             <p className="text-xs text-text-tertiary mt-1 text-right">{name.length}/100</p>

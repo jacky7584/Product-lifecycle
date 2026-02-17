@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { Stage } from '@prisma/client'
+import { Stage, Priority } from '@prisma/client'
 
 export async function GET(
   request: Request,
@@ -20,8 +20,8 @@ export async function GET(
     const tickets = await prisma.ticket.findMany({
       where: { projectId: id },
       include: {
-        assignee: true,
-        _count: { select: { attachments: true } },
+        attachments: true,
+        subtasks: { orderBy: { order: 'asc' } },
       },
       orderBy: { order: 'asc' },
     })
@@ -43,7 +43,7 @@ export async function POST(
   try {
     const { id } = await params
     const body = await request.json()
-    const { title, description, assigneeId, stage } = body
+    const { title, description, stage, priority, dueDate } = body
 
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
       return NextResponse.json(
@@ -68,6 +68,7 @@ export async function POST(
     }
 
     const ticketStage: Stage = stage && Object.values(Stage).includes(stage) ? stage : Stage.START
+    const ticketPriority: Priority = priority && Object.values(Priority).includes(priority) ? priority : Priority.MEDIUM
 
     // Calculate order: append to end of the target stage column
     const lastTicket = await prisma.ticket.findFirst({
@@ -82,13 +83,14 @@ export async function POST(
         title: title.trim(),
         description: description?.trim() || null,
         stage: ticketStage,
+        priority: ticketPriority,
+        dueDate: dueDate ? new Date(dueDate) : null,
         order,
         projectId: id,
-        assigneeId: assigneeId || null,
       },
       include: {
-        assignee: true,
         attachments: true,
+        subtasks: { orderBy: { order: 'asc' } },
       },
     })
 

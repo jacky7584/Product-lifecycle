@@ -4,6 +4,24 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { hapticImpact } from '@/lib/haptics'
 import type { TicketWithRelations } from '@/types'
+import { Priority } from '@/types'
+
+const PRIORITY_DOT: Record<Priority, string> = {
+  HIGH: 'bg-red-500',
+  MEDIUM: 'bg-yellow-500',
+  LOW: 'bg-green-500',
+}
+
+function formatDueDate(dateStr: string | null | undefined): { text: string; isOverdue: boolean } | null {
+  if (!dateStr) return null
+  const due = new Date(dateStr)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const isOverdue = due < today
+  const month = due.getMonth() + 1
+  const day = due.getDate()
+  return { text: `${month}/${day}`, isOverdue }
+}
 
 type Props = {
   ticket: TicketWithRelations
@@ -26,6 +44,10 @@ export default function TicketCard({ ticket, onClick }: Props) {
     opacity: isDragging ? 0.5 : 1,
   }
 
+  const dueInfo = formatDueDate(ticket.dueDate as string | null)
+  const subtaskCount = ticket.subtasks?.length || 0
+  const subtaskDone = ticket.subtasks?.filter((s) => s.done).length || 0
+
   return (
     <div
       ref={setNodeRef}
@@ -37,15 +59,27 @@ export default function TicketCard({ ticket, onClick }: Props) {
     >
       <p className="text-sm font-medium text-text-primary mb-2 line-clamp-2">{ticket.title}</p>
       <div className="flex items-center justify-between text-xs text-text-tertiary">
-        <span>{ticket.assignee ? ticket.assignee.name : '未指派'}</span>
-        {ticket.attachments.length > 0 && (
-          <span className="flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-            </svg>
-            {ticket.attachments.length}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full ${PRIORITY_DOT[ticket.priority]}`} title={ticket.priority} />
+          {subtaskCount > 0 && (
+            <span className="text-text-tertiary">{subtaskDone}/{subtaskCount}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {ticket.attachments.length > 0 && (
+            <span className="flex items-center gap-1">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+              {ticket.attachments.length}
+            </span>
+          )}
+          {dueInfo && (
+            <span className={dueInfo.isOverdue ? 'text-red-500 font-medium' : ''}>
+              {dueInfo.text}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )

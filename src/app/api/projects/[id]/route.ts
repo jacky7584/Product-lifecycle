@@ -13,8 +13,8 @@ export async function GET(
       include: {
         tickets: {
           include: {
-            assignee: true,
             attachments: true,
+            subtasks: { orderBy: { order: 'asc' } },
           },
           orderBy: { order: 'asc' },
         },

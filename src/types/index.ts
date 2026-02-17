@@ -1,12 +1,12 @@
-import type { Project, Ticket, Engineer, Attachment } from '@prisma/client'
-import { Stage } from '@prisma/client'
+import type { Project, Ticket, Attachment, Subtask } from '@prisma/client'
+import { Stage, Priority } from '@prisma/client'
 
-export type { Project, Ticket, Engineer, Attachment }
-export { Stage }
+export type { Project, Ticket, Attachment, Subtask }
+export { Stage, Priority }
 
 export type TicketWithRelations = Ticket & {
-  assignee: Engineer | null
   attachments: Attachment[]
+  subtasks: Subtask[]
 }
 
 export type ProjectWithTickets = Project & {

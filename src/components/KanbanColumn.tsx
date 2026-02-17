@@ -47,7 +47,7 @@ export default function KanbanColumn({ stage, tickets, onTicketClick }: Props) {
           ))}
         </SortableContext>
         {tickets.length === 0 && (
-          <p className="text-xs text-text-tertiary text-center py-8">尚無工單</p>
+          <p className="text-xs text-text-tertiary text-center py-8">尚無任務</p>
         )}
       </div>
     </div>

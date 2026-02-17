@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import type { TicketWithRelations, Engineer } from '@/types'
-import { Stage } from '@/types'
+import type { TicketWithRelations } from '@/types'
+import { Stage, Priority } from '@/types'
 import { apiFetch } from '@/lib/api'
 import { hapticNotification } from '@/lib/haptics'
 
@@ -21,41 +21,38 @@ const STAGE_OPTIONS: { value: Stage; label: string }[] = [
   { value: Stage.FINISH, label: 'Finish' },
 ]
 
+const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
+  { value: Priority.HIGH, label: '高' },
+  { value: Priority.MEDIUM, label: '中' },
+  { value: Priority.LOW, label: '低' },
+]
+
 export default function TicketFormModal({ open, onClose, onSaved, projectId, ticket }: Props) {
   const isEditing = !!ticket
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [assigneeId, setAssigneeId] = useState('')
   const [stage, setStage] = useState<Stage>(Stage.START)
+  const [priority, setPriority] = useState<Priority>(Priority.MEDIUM)
+  const [dueDate, setDueDate] = useState('')
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
-  const [engineers, setEngineers] = useState<Engineer[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (open) {
-      apiFetch('/api/engineers')
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) setEngineers(data)
-        })
-        .catch(() => {})
-    }
-  }, [open])
 
   useEffect(() => {
     if (open) {
       if (ticket) {
         setTitle(ticket.title)
         setDescription(ticket.description || '')
-        setAssigneeId(ticket.assigneeId || '')
         setStage(ticket.stage)
+        setPriority(ticket.priority)
+        setDueDate(ticket.dueDate ? new Date(ticket.dueDate).toISOString().split('T')[0] : '')
       } else {
         setTitle('')
         setDescription('')
-        setAssigneeId('')
         setStage(Stage.START)
+        setPriority(Priority.MEDIUM)
+        setDueDate('')
       }
       setFiles([])
       setPreviews([])
@@ -98,13 +95,14 @@ export default function TicketFormModal({ open, onClose, onSaved, projectId, tic
           body: JSON.stringify({
             title: title.trim(),
             description: description.trim() || null,
-            assigneeId: assigneeId || null,
             stage,
+            priority,
+            dueDate: dueDate || null,
           }),
         })
         if (!res.ok) {
           const data = await res.json()
-          setError(data.error || '更新工單失敗')
+          setError(data.error || '更新任務失敗')
           return
         }
         ticketId = ticket.id
@@ -115,13 +113,14 @@ export default function TicketFormModal({ open, onClose, onSaved, projectId, tic
           body: JSON.stringify({
             title: title.trim(),
             description: description.trim() || null,
-            assigneeId: assigneeId || null,
             stage,
+            priority,
+            dueDate: dueDate || null,
           }),
         })
         if (!res.ok) {
           const data = await res.json()
-          setError(data.error || '建立工單失敗')
+          setError(data.error || '建立任務失敗')
           return
         }
         const created = await res.json()
@@ -170,7 +169,7 @@ export default function TicketFormModal({ open, onClose, onSaved, projectId, tic
     >
       <div className="bg-bg-default rounded-lg shadow-xl w-full max-w-md mx-4 p-6 max-h-[90vh] overflow-y-auto animate-slide-up">
         <h2 className="text-lg font-semibold text-text-primary mb-4">
-          {isEditing ? '編輯工單' : '新增工單'}
+          {isEditing ? '編輯任務' : '新增任務'}
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -184,7 +183,7 @@ export default function TicketFormModal({ open, onClose, onSaved, projectId, tic
               onChange={(e) => setTitle(e.target.value)}
               maxLength={200}
               className="w-full px-3 py-2 border border-border-primary rounded-md text-sm bg-bg-inputfield text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus"
-              placeholder="工單標題"
+              placeholder="任務標題"
               autoFocus
             />
             <p className="text-xs text-text-tertiary mt-1 text-right">{title.length}/200</p>
@@ -204,41 +203,55 @@ export default function TicketFormModal({ open, onClose, onSaved, projectId, tic
             />
           </div>
 
-          <div className="mb-4">
-            <label htmlFor="ticket-assignee" className="block text-sm font-medium text-text-secondary mb-1">
-              負責人
-            </label>
-            <select
-              id="ticket-assignee"
-              value={assigneeId}
-              onChange={(e) => setAssigneeId(e.target.value)}
-              className="w-full px-3 py-2 border border-border-primary rounded-md text-sm bg-bg-inputfield text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus"
-            >
-              <option value="">未指派</option>
-              {engineers.map((eng) => (
-                <option key={eng.id} value={eng.id}>
-                  {eng.name}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label htmlFor="ticket-priority" className="block text-sm font-medium text-text-secondary mb-1">
+                優先級
+              </label>
+              <select
+                id="ticket-priority"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as Priority)}
+                className="w-full px-3 py-2 border border-border-primary rounded-md text-sm bg-bg-inputfield text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus"
+              >
+                {PRIORITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="ticket-stage" className="block text-sm font-medium text-text-secondary mb-1">
+                階段
+              </label>
+              <select
+                id="ticket-stage"
+                value={stage}
+                onChange={(e) => setStage(e.target.value as Stage)}
+                className="w-full px-3 py-2 border border-border-primary rounded-md text-sm bg-bg-inputfield text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus"
+              >
+                {STAGE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="mb-4">
-            <label htmlFor="ticket-stage" className="block text-sm font-medium text-text-secondary mb-1">
-              階段
+            <label htmlFor="ticket-due" className="block text-sm font-medium text-text-secondary mb-1">
+              截止日
             </label>
-            <select
-              id="ticket-stage"
-              value={stage}
-              onChange={(e) => setStage(e.target.value as Stage)}
+            <input
+              id="ticket-due"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               className="w-full px-3 py-2 border border-border-primary rounded-md text-sm bg-bg-inputfield text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus"
-            >
-              {STAGE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="mb-4">

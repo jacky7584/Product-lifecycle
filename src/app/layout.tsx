@@ -15,7 +15,7 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: "Product Tracker",
-  description: "產品生命週期追蹤系統",
+  description: "待辦事項追蹤系統",
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",

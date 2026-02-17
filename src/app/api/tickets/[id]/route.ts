@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { Stage } from '@prisma/client'
+import { Stage, Priority } from '@prisma/client'
 
 export async function GET(
   request: Request,
@@ -12,8 +12,8 @@ export async function GET(
     const ticket = await prisma.ticket.findUnique({
       where: { id },
       include: {
-        assignee: true,
         attachments: true,
+        subtasks: { orderBy: { order: 'asc' } },
       },
     })
 
@@ -41,7 +41,7 @@ export async function PATCH(
   try {
     const { id } = await params
     const body = await request.json()
-    const { title, description, stage, order, assigneeId } = body
+    const { title, description, stage, order, priority, dueDate } = body
 
     if (title !== undefined && (typeof title !== 'string' || title.trim().length === 0)) {
       return NextResponse.json(
@@ -64,19 +64,27 @@ export async function PATCH(
       )
     }
 
+    if (priority !== undefined && !Object.values(Priority).includes(priority)) {
+      return NextResponse.json(
+        { error: 'Invalid priority value' },
+        { status: 400 }
+      )
+    }
+
     const data: Record<string, unknown> = {}
     if (title !== undefined) data.title = title.trim()
     if (description !== undefined) data.description = description?.trim() || null
     if (stage !== undefined) data.stage = stage
     if (order !== undefined) data.order = order
-    if (assigneeId !== undefined) data.assigneeId = assigneeId || null
+    if (priority !== undefined) data.priority = priority
+    if (dueDate !== undefined) data.dueDate = dueDate ? new Date(dueDate) : null
 
     const ticket = await prisma.ticket.update({
       where: { id },
       data,
       include: {
-        assignee: true,
         attachments: true,
+        subtasks: { orderBy: { order: 'asc' } },
       },
     })
 

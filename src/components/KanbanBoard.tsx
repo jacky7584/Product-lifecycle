@@ -263,11 +263,8 @@ export default function KanbanBoard({ tickets, projectId, onRefresh }: Props) {
 
         <DragOverlay>
           {activeTicket ? (
-            <div aria-label="拖曳中的工單" className="bg-bg-default rounded-lg shadow-lg border border-border-brand-subtle p-3 w-[244px] rotate-2 opacity-90">
+            <div aria-label="拖曳中的任務" className="bg-bg-default rounded-lg shadow-lg border border-border-brand-subtle p-3 w-[244px] rotate-2 opacity-90">
               <p className="text-sm font-medium text-text-primary mb-2 line-clamp-2">{activeTicket.title}</p>
-              <div className="flex items-center justify-between text-xs text-text-tertiary">
-                <span>{activeTicket.assignee ? activeTicket.assignee.name : '未指派'}</span>
-              </div>
             </div>
           ) : null}
         </DragOverlay>
