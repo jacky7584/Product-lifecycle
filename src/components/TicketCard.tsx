@@ -2,6 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { hapticImpact } from '@/lib/haptics'
 import type { TicketWithRelations } from '@/types'
 
 type Props = {
@@ -31,7 +32,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
       style={style}
       {...attributes}
       {...listeners}
-      onClick={onClick}
+      onClick={() => { hapticImpact('light'); onClick() }}
       className="bg-bg-default rounded-lg shadow-sm border border-border-primary p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow duration-200 focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
     >
       <p className="text-sm font-medium text-text-primary mb-2 line-clamp-2">{ticket.title}</p>

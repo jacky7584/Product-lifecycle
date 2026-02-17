@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api'
 
 type Engineer = {
   id: string
@@ -20,7 +21,7 @@ export default function EngineersPage() {
 
   const fetchEngineers = useCallback(async () => {
     try {
-      const res = await fetch('/api/engineers')
+      const res = await apiFetch('/api/engineers')
       if (res.ok) {
         const data = await res.json()
         setEngineers(data)
@@ -47,7 +48,7 @@ export default function EngineersPage() {
 
     setSubmitting(true)
     try {
-      const res = await fetch('/api/engineers', {
+      const res = await apiFetch('/api/engineers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), email: email.trim() }),
@@ -76,7 +77,7 @@ export default function EngineersPage() {
       return
     }
     try {
-      const res = await fetch(`/api/engineers/${id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/engineers/${id}`, { method: 'DELETE' })
       if (res.ok) {
         fetchEngineers()
       }

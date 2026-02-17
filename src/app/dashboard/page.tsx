@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import ProjectCard, { type ProjectSummary } from '@/components/ProjectCard'
 import CreateProjectDialog from '@/components/CreateProjectDialog'
+import { apiFetch } from '@/lib/api'
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
@@ -11,7 +12,7 @@ export default function DashboardPage() {
 
   const fetchProjects = useCallback(async () => {
     try {
-      const res = await fetch('/api/projects')
+      const res = await apiFetch('/api/projects')
       if (res.ok) {
         const data = await res.json()
         setProjects(data)

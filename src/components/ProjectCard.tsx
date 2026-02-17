@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { apiFetch } from '@/lib/api'
+import { hapticNotification } from '@/lib/haptics'
 
 type StageCounts = {
   START: number
@@ -46,12 +48,13 @@ export default function ProjectCard({
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    hapticNotification('warning')
     setShowDeleteConfirm(true)
   }
 
   const performDelete = async () => {
     try {
-      const res = await fetch(`/api/projects/${project.id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/projects/${project.id}`, { method: 'DELETE' })
       if (res.ok) onDeleted?.()
     } catch {
       // silently fail

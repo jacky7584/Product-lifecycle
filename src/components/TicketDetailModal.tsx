@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { TicketWithRelations } from '@/types'
 import { Stage } from '@/types'
+import { apiFetch } from '@/lib/api'
+import { hapticNotification } from '@/lib/haptics'
 
 type Props = {
   open: boolean
@@ -31,11 +33,12 @@ export default function TicketDetailModal({ open, onClose, ticket, onEdit, onDel
     if (!ticket) return
     if (!confirmDelete) {
       setConfirmDelete(true)
+      hapticNotification('warning')
       return
     }
     setDeleting(true)
     try {
-      const res = await fetch(`/api/tickets/${ticket.id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/tickets/${ticket.id}`, { method: 'DELETE' })
       if (res.ok) {
         onDeleted()
         onClose()
@@ -48,7 +51,7 @@ export default function TicketDetailModal({ open, onClose, ticket, onEdit, onDel
   }, [ticket, confirmDelete, onDeleted, onClose])
 
   const handleDeleteAttachment = useCallback(async (attachmentId: string) => {
-    await fetch(`/api/attachments/${attachmentId}`, { method: 'DELETE' })
+    await apiFetch(`/api/attachments/${attachmentId}`, { method: 'DELETE' })
     onDeleted() // refresh data
   }, [onDeleted])
 

@@ -6,6 +6,7 @@ import {
   DragOverlay,
   closestCorners,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
@@ -16,6 +17,8 @@ import { arrayMove } from '@dnd-kit/sortable'
 import KanbanColumn from './KanbanColumn'
 import TicketDetailModal from './TicketDetailModal'
 import TicketFormModal from './TicketFormModal'
+import { apiFetch } from '@/lib/api'
+import { hapticImpact, hapticNotification, hapticSelection } from '@/lib/haptics'
 import type { TicketWithRelations } from '@/types'
 import { Stage } from '@/types'
 
@@ -46,6 +49,9 @@ export default function KanbanBoard({ tickets, projectId, onRefresh }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 5 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
     })
   )
 
@@ -83,6 +89,7 @@ export default function KanbanBoard({ tickets, projectId, onRefresh }: Props) {
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string)
+    hapticImpact('medium')
   }, [])
 
   const handleDragOver = useCallback(
@@ -102,6 +109,7 @@ export default function KanbanBoard({ tickets, projectId, onRefresh }: Props) {
 
       if (!activeStage || !overStage || activeStage === overStage) return
 
+      hapticSelection()
       // Move ticket to new column
       setLocalTickets((prev) => {
         return prev.map((t) => {
@@ -178,6 +186,7 @@ export default function KanbanBoard({ tickets, projectId, onRefresh }: Props) {
         })
       })
 
+      hapticNotification('success')
       // Persist to API
       persistReorder(targetStage)
     },
@@ -195,7 +204,7 @@ export default function KanbanBoard({ tickets, projectId, onRefresh }: Props) {
             .map((t, i) => ({ id: t.id, stage: t.stage, order: i }))
 
           if (ticketsToUpdate.length > 0) {
-            fetch('/api/tickets/reorder', {
+            apiFetch('/api/tickets/reorder', {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ tickets: ticketsToUpdate }),

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Product Tracker</string>
+    <string name="title_activity_main">Product Tracker</string>
+    <string name="package_name">com.producttracker.app</string>
+    <string name="custom_url_scheme">com.producttracker.app</string>
+</resources>

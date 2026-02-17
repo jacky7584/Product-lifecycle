@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiFetch, setAuthToken, clearAuthToken } from '@/lib/api'
 
 type User = {
   id: string
@@ -25,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    fetch('/api/auth/me')
+    apiFetch('/api/auth/me')
       .then(async (res) => {
         if (res.ok) {
           const data = await res.json()
@@ -38,13 +39,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await apiFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
       const data = await res.json()
       if (!res.ok) return data.error || '登入失敗'
+      if (data.token) await setAuthToken(data.token)
       setUser(data.user)
       return null
     } catch {
@@ -54,13 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (email: string, password: string, name: string): Promise<string | null> => {
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await apiFetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name }),
       })
       const data = await res.json()
       if (!res.ok) return data.error || '註冊失敗'
+      if (data.token) await setAuthToken(data.token)
       setUser(data.user)
       return null
     } catch {
@@ -70,10 +73,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await apiFetch('/api/auth/logout', { method: 'POST' })
     } catch {
       // clear local state even if API fails
     }
+    await clearAuthToken()
     setUser(null)
     router.push('/login')
   }, [router])

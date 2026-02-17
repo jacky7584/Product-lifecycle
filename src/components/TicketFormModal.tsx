@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { TicketWithRelations, Engineer } from '@/types'
 import { Stage } from '@/types'
+import { apiFetch } from '@/lib/api'
+import { hapticNotification } from '@/lib/haptics'
 
 type Props = {
   open: boolean
@@ -33,7 +35,7 @@ export default function TicketFormModal({ open, onClose, onSaved, projectId, tic
 
   useEffect(() => {
     if (open) {
-      fetch('/api/engineers')
+      apiFetch('/api/engineers')
         .then((res) => res.json())
         .then((data) => {
           if (Array.isArray(data)) setEngineers(data)
@@ -90,7 +92,7 @@ export default function TicketFormModal({ open, onClose, onSaved, projectId, tic
       let ticketId: string
 
       if (isEditing) {
-        const res = await fetch(`/api/tickets/${ticket.id}`, {
+        const res = await apiFetch(`/api/tickets/${ticket.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -107,7 +109,7 @@ export default function TicketFormModal({ open, onClose, onSaved, projectId, tic
         }
         ticketId = ticket.id
       } else {
-        const res = await fetch(`/api/projects/${projectId}/tickets`, {
+        const res = await apiFetch(`/api/projects/${projectId}/tickets`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -130,12 +132,13 @@ export default function TicketFormModal({ open, onClose, onSaved, projectId, tic
       for (const file of files) {
         const formData = new FormData()
         formData.append('file', file)
-        await fetch(`/api/tickets/${ticketId}/attachments`, {
+        await apiFetch(`/api/tickets/${ticketId}/attachments`, {
           method: 'POST',
           body: formData,
         })
       }
 
+      hapticNotification('success')
       onSaved()
       onClose()
     } catch {

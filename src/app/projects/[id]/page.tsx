@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import KanbanBoard from '@/components/KanbanBoard'
 import TicketFormModal from '@/components/TicketFormModal'
+import { apiFetch } from '@/lib/api'
 import type { ProjectWithTickets } from '@/types'
 
 export default function ProjectDetailPage() {
@@ -18,7 +19,7 @@ export default function ProjectDetailPage() {
 
   const fetchProject = useCallback(async () => {
     try {
-      const res = await fetch(`/api/projects/${projectId}`)
+      const res = await apiFetch(`/api/projects/${projectId}`)
       if (!res.ok) {
         setError('找不到此項目')
         return

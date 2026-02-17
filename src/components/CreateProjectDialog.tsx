@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { apiFetch } from '@/lib/api'
+import { hapticNotification } from '@/lib/haptics'
 
 type Props = {
   open: boolean
@@ -36,7 +38,7 @@ export default function CreateProjectDialog({ open, onClose, onCreated }: Props)
 
     setSubmitting(true)
     try {
-      const res = await fetch('/api/projects', {
+      const res = await apiFetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), description: description.trim() || undefined }),
@@ -48,6 +50,7 @@ export default function CreateProjectDialog({ open, onClose, onCreated }: Props)
         return
       }
 
+      hapticNotification('success')
       setName('')
       setDescription('')
       onCreated()

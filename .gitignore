@@ -45,3 +45,7 @@ next-env.d.ts
 # database
 *.db
 *.db-journal
+
+# Capacitor copied web assets
+ios/App/App/public/
+android/app/src/main/assets/public/
