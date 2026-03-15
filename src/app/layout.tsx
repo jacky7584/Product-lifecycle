@@ -6,6 +6,7 @@ import CapacitorProvider from "@/components/CapacitorProvider";
 import OfflineBanner from "@/components/OfflineBanner";
 import PushSetup from "@/components/PushSetup";
 import NavBar from "@/components/NavBar";
+import SplashCursorWrapper from "@/components/SplashCursorWrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,6 +44,7 @@ export default function RootLayout({
           <ThemeProvider>
             <AuthProvider>
               <PushSetup />
+              <SplashCursorWrapper />
               <NavBar />
               <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {children}

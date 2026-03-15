@@ -3,6 +3,13 @@
     "product-lifecycle": {
       "type": "http",
       "url": "http://localhost:3000/api/mcp"
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }

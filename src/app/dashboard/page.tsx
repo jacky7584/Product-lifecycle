@@ -1,11 +1,15 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import ProjectCard, { type ProjectSummary } from '@/components/ProjectCard'
 import CreateProjectDialog from '@/components/CreateProjectDialog'
 import { apiFetch } from '@/lib/api'
 import { Priority } from '@/types'
+import gsap from 'gsap'
+import { useGsapCounter } from '@/hooks/useGsap'
+import StarBorder from '@/components/StarBorder'
+import AnimatedList from '@/components/AnimatedList'
 
 type DashboardTicket = {
   id: string
@@ -55,6 +59,11 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
 
+  const pageRef = useRef<HTMLDivElement>(null)
+  const overviewRef = useRef<HTMLDivElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
+  const hasAnimated = useRef(false)
+
   const fetchData = useCallback(async () => {
     try {
       const [projRes, dashRes] = await Promise.all([
@@ -80,51 +89,119 @@ export default function DashboardPage() {
     fetchData()
   }, [fetchData])
 
+  // Single animation: reveal entire page after data loads
+  useEffect(() => {
+    if (loading || hasAnimated.current) return
+    hasAnimated.current = true
+
+    const el = pageRef.current
+    if (!el) return
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.style.opacity = '1'
+      return
+    }
+
+    const ctx = gsap.context(() => {
+      // Reveal the page wrapper
+      gsap.fromTo(el,
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+      )
+
+      // Stagger overview sections
+      if (overviewRef.current) {
+        const sections = overviewRef.current.children
+        gsap.fromTo(sections,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', stagger: 0.1, delay: 0.2 }
+        )
+      }
+
+      // Stagger project cards
+      if (gridRef.current) {
+        const cards = gridRef.current.children
+        gsap.fromTo(cards,
+          { opacity: 0, y: 30, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power2.out', stagger: 0.08, delay: 0.3 }
+        )
+      }
+    }, el)
+
+    return () => ctx.revert()
+  }, [loading])
+
   const hasOverview = dashboard && (dashboard.overdue.length > 0 || dashboard.todayDue.length > 0 || dashboard.upcoming.length > 0)
 
+  // Counter refs for overview counts
+  const overdueCountRef = useGsapCounter(dashboard?.overdue.length ?? 0, [loading])
+  const todayCountRef = useGsapCounter(dashboard?.todayDue.length ?? 0, [loading])
+  const upcomingCountRef = useGsapCounter(dashboard?.upcoming.length ?? 0, [loading])
+
   return (
-    <>
+    <div ref={pageRef} style={{ opacity: 0 }}>
       {/* Today overview */}
       {!loading && hasOverview && (
-        <div className="mb-8 space-y-4">
+        <div ref={overviewRef} className="mb-8 space-y-4">
           <h2 className="text-lg font-semibold text-text-primary">今日概覽</h2>
 
           {dashboard.overdue.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-red-500 mb-1">
-                逾期 ({dashboard.overdue.length})
+                逾期 (<span ref={overdueCountRef}>{dashboard.overdue.length}</span>)
               </h3>
-              <div className="bg-bg-default rounded-lg border border-red-200 divide-y divide-border-subtle">
-                {dashboard.overdue.map((t) => (
-                  <TaskRow key={t.id} ticket={t} />
-                ))}
-              </div>
+              <AnimatedList
+                items={dashboard.overdue.map((t) => `${t.title} — ${t.project.name}`)}
+                onItemSelect={(_, i) => {
+                  const t = dashboard.overdue[i]
+                  if (t) window.location.href = `/projects/${t.project.id}`
+                }}
+                showGradients={false}
+                enableArrowNavigation={false}
+                className="!w-full"
+                itemClassName="!bg-bg-default border border-red-200 !rounded-lg"
+                displayScrollbar={false}
+              />
             </div>
           )}
 
           {dashboard.todayDue.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-orange-500 mb-1">
-                今日到期 ({dashboard.todayDue.length})
+                今日到期 (<span ref={todayCountRef}>{dashboard.todayDue.length}</span>)
               </h3>
-              <div className="bg-bg-default rounded-lg border border-orange-200 divide-y divide-border-subtle">
-                {dashboard.todayDue.map((t) => (
-                  <TaskRow key={t.id} ticket={t} />
-                ))}
-              </div>
+              <AnimatedList
+                items={dashboard.todayDue.map((t) => `${t.title} — ${t.project.name}`)}
+                onItemSelect={(_, i) => {
+                  const t = dashboard.todayDue[i]
+                  if (t) window.location.href = `/projects/${t.project.id}`
+                }}
+                showGradients={false}
+                enableArrowNavigation={false}
+                className="!w-full"
+                itemClassName="!bg-bg-default border border-orange-200 !rounded-lg"
+                displayScrollbar={false}
+              />
             </div>
           )}
 
           {dashboard.upcoming.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-text-secondary mb-1">
-                即將到期 ({dashboard.upcoming.length})
+                即將到期 (<span ref={upcomingCountRef}>{dashboard.upcoming.length}</span>)
               </h3>
-              <div className="bg-bg-default rounded-lg border border-border-primary divide-y divide-border-subtle">
-                {dashboard.upcoming.map((t) => (
-                  <TaskRow key={t.id} ticket={t} />
-                ))}
-              </div>
+              <AnimatedList
+                items={dashboard.upcoming.map((t) => `${t.title} — ${t.project.name}`)}
+                onItemSelect={(_, i) => {
+                  const t = dashboard.upcoming[i]
+                  if (t) window.location.href = `/projects/${t.project.id}`
+                }}
+                showGradients={false}
+                enableArrowNavigation={false}
+                className="!w-full"
+                itemClassName="!bg-bg-default border border-border-primary !rounded-lg"
+                displayScrollbar={false}
+              />
             </div>
           )}
         </div>
@@ -133,12 +210,15 @@ export default function DashboardPage() {
       {/* Projects list */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-text-primary">清單列表</h1>
-        <button
+        <StarBorder
+          as="button"
+          color="#2E9DFF"
+          speed="5s"
+          className="cursor-pointer"
           onClick={() => setDialogOpen(true)}
-          className="px-4 py-2 text-sm font-medium text-text-onbrand bg-bg-brand rounded-md hover:bg-bg-brand-compliment transition-colors min-h-[44px] cursor-pointer focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
         >
           新建清單
-        </button>
+        </StarBorder>
       </div>
 
       {loading ? (
@@ -156,7 +236,7 @@ export default function DashboardPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((project) => (
             <ProjectCard key={project.id} project={project} onDeleted={fetchData} />
           ))}
@@ -168,6 +248,6 @@ export default function DashboardPage() {
         onClose={() => setDialogOpen(false)}
         onCreated={fetchData}
       />
-    </>
+    </div>
   )
 }

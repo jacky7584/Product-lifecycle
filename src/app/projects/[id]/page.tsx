@@ -8,6 +8,7 @@ import TicketFormModal from '@/components/TicketFormModal'
 import { apiFetch } from '@/lib/api'
 import { hapticNotification } from '@/lib/haptics'
 import type { ProjectWithTickets } from '@/types'
+import StarBorder from '@/components/StarBorder'
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -39,6 +40,7 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     fetchProject()
   }, [fetchProject])
+
 
   const handleRefresh = useCallback(() => {
     fetchProject()
@@ -85,7 +87,7 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <>
+    <div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Link
@@ -99,12 +101,15 @@ export default function ProjectDetailPage() {
           </Link>
           <h1 className="text-2xl font-bold text-text-primary">{project.name}</h1>
         </div>
-        <button
+        <StarBorder
+          as="button"
+          color="#2E9DFF"
+          speed="5s"
+          className="cursor-pointer"
           onClick={() => setShowNewTicket(true)}
-          className="px-4 py-2 text-sm font-medium text-text-onbrand bg-bg-brand rounded-md hover:bg-bg-brand-compliment transition-colors min-h-[44px] focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2 cursor-pointer"
         >
           新增任務
-        </button>
+        </StarBorder>
       </div>
 
       {project.description && (
@@ -120,7 +125,7 @@ export default function ProjectDetailPage() {
             onChange={(e) => setQuickTitle(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleQuickAdd() } }}
             placeholder="快速新增任務... (Enter)"
-            className="flex-1 px-3 py-2 border border-border-primary rounded-md text-sm bg-bg-inputfield text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus"
+            className="quick-input flex-1 px-3 py-2 border border-border-primary rounded-md text-sm bg-bg-inputfield text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus transition-all duration-300"
             disabled={quickAdding}
           />
         </div>
@@ -134,6 +139,6 @@ export default function ProjectDetailPage() {
         onSaved={handleRefresh}
         projectId={project.id}
       />
-    </>
+    </div>
   )
 }

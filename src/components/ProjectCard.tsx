@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { apiFetch } from '@/lib/api'
 import { hapticNotification } from '@/lib/haptics'
+import GlareHover from '@/components/GlareHover'
 
 type StageCounts = {
   START: number
@@ -66,43 +67,55 @@ export default function ProjectCard({
   return (
     <>
       <Link href={`/projects/${project.id}`} className="block focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2 rounded-lg">
-        <div className="bg-bg-default rounded-lg border border-border-primary p-5 hover:shadow-md hover:border-border-primary transition-all transition-shadow duration-200 cursor-pointer h-full flex flex-col">
-          <div className="flex items-start justify-between mb-1">
-            <h3 className="text-lg font-semibold text-text-primary">{project.name}</h3>
-            <button
-              onClick={handleDelete}
-              className="p-2.5 text-text-tertiary hover:text-text-error transition-colors shrink-0"
-              aria-label="刪除清單"
-              title="刪除清單"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
-          {project.description && (
-            <p className="text-sm text-text-tertiary mb-3 line-clamp-2">{project.description}</p>
-          )}
-          {!project.description && <div className="mb-3" />}
-          <div className="flex flex-wrap gap-1.5 mt-auto mb-3">
-            {stageBadges.map(({ key, label, bg, text }) => {
-              const count = project.stageCounts[key]
-              if (count === 0) return null
-              return (
-                <span
-                  key={key}
-                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${bg} ${text}`}
-                >
-                  {count} {label}
-                </span>
-              )
-            })}
-            {project.ticketCount === 0 && (
-              <span className="text-xs text-text-tertiary">尚無任務</span>
+        <GlareHover
+          width="100%"
+          height="auto"
+          background="var(--color-bg-default)"
+          borderRadius="0.5rem"
+          borderColor="var(--color-border-primary)"
+          glareColor="#2E9DFF"
+          glareOpacity={0.15}
+          glareSize={300}
+          className="!grid-cols-1 !place-items-stretch h-full"
+        >
+          <div className="p-5 flex flex-col h-full text-left relative z-10">
+            <div className="flex items-start justify-between mb-1">
+              <h3 className="text-lg font-semibold text-text-primary">{project.name}</h3>
+              <button
+                onClick={handleDelete}
+                className="p-2.5 text-text-tertiary hover:text-text-error transition-colors shrink-0"
+                aria-label="刪除清單"
+                title="刪除清單"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            {project.description && (
+              <p className="text-sm text-text-tertiary mb-3 line-clamp-2">{project.description}</p>
             )}
+            {!project.description && <div className="mb-3" />}
+            <div className="flex flex-wrap gap-1.5 mt-auto mb-3">
+              {stageBadges.map(({ key, label, bg, text }) => {
+                const count = project.stageCounts[key]
+                if (count === 0) return null
+                return (
+                  <span
+                    key={key}
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${bg} ${text}`}
+                  >
+                    {count} {label}
+                  </span>
+                )
+              })}
+              {project.ticketCount === 0 && (
+                <span className="text-xs text-text-tertiary">尚無任務</span>
+              )}
+            </div>
+            <p className="text-xs text-text-tertiary">建立於 {formatDate(project.createdAt)}</p>
           </div>
-          <p className="text-xs text-text-tertiary">建立於 {formatDate(project.createdAt)}</p>
-        </div>
+        </GlareHover>
       </Link>
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-overlay backdrop-blur-sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowDeleteConfirm(false); }}>
